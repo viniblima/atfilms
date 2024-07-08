@@ -1,0 +1,38 @@
+version: '1.0'
+
+services:
+  web:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    expose:
+      - 3000
+    volumes:
+      - .:/usr/src/app
+    command: air ./cmd/main.go -b 0.0.0.0
+  
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      # DB_USER: edkxeagyhmpwrt
+      # DB_PASSWORD: 965df8a954a96a7724b0620bd14b3d76dd0421cf6a5f73df19ba44903dc78600
+      # DB_NAME: dd5rhfecd6ag5c
+      # SUPERUSER_NAME: AdminZPE
+      # SUPERUSER_EMAIL: zpe@email.com
+      # SUPERUSER_PASSWORD: ZPE490@zpe123
+      # PASSWORD_SECRET: ihasdjkas
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+volumes:
+  postgres-db:
