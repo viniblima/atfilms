@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/viniblima/atfilms/database"
 	"github.com/viniblima/atfilms/models"
 	"gorm.io/gorm"
 )
@@ -32,4 +33,10 @@ func (repo *uploadRepository) RemoveVideoByID(id string) error {
 	var video models.Video
 	err := repo.Db.Model(&models.Video{}).Where("ID = ?", id).Delete(video).Error
 	return err
+}
+
+func NewUploadRepository() UploadRepository {
+	return &uploadRepository{
+		Db: database.Db,
+	}
 }

@@ -42,4 +42,14 @@ func ConnectDb() {
 		&models.Video{},
 		&models.Job{},
 	)
+
+	newUser := models.User{
+		Name:     os.Getenv("SUPERUSER_NAME"),
+		Email:    os.Getenv("SUPERUSER_EMAIL"),
+		Password: os.Getenv("SUPERUSER_PASSWORD"),
+	}
+
+	db.Create(&newUser)
+
+	Db = db
 }

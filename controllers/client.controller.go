@@ -25,7 +25,7 @@ type CreateClientStruct struct {
 	Name string `json:"Name" validate:"required,min=3,max=32"`
 }
 
-func (controller *clientController) CreateClient(c *fiber.Ctx) error {
+func (controller clientController) CreateClient(c *fiber.Ctx) error {
 	body := new(CreateClientStruct)
 	c.BodyParser(&body)
 	err := validator.New().Struct(body)
@@ -44,7 +44,7 @@ func (controller *clientController) CreateClient(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(newClient)
 }
 
-func (controller *clientController) GetClientByID(c *fiber.Ctx) error {
+func (controller clientController) GetClientByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 	client, errClient := controller.clientRepo.GetClientByID(id)
 
@@ -56,7 +56,7 @@ func (controller *clientController) GetClientByID(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(client)
 }
 
-func (controller *clientController) UpdateClient(c *fiber.Ctx) error {
+func (controller clientController) UpdateClient(c *fiber.Ctx) error {
 	body := new(CreateClientStruct)
 	c.BodyParser(&body)
 	err := validator.New().Struct(body)
@@ -84,7 +84,7 @@ func (controller *clientController) UpdateClient(c *fiber.Ctx) error {
 	})
 }
 
-func (controller *clientController) ListClients(c *fiber.Ctx) error {
+func (controller clientController) ListClients(c *fiber.Ctx) error {
 	clients, err := controller.clientRepo.ListClients()
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(err)
@@ -93,5 +93,7 @@ func (controller *clientController) ListClients(c *fiber.Ctx) error {
 }
 
 func NewClientController() ClientController {
-	return &clientController{}
+	return &clientController{
+		clientRepo: repository.NewClientRepository(),
+	}
 }

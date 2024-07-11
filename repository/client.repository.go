@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/viniblima/atfilms/database"
 	"github.com/viniblima/atfilms/models"
 	"gorm.io/gorm"
 )
@@ -44,4 +45,10 @@ func (repo *clientRepository) GetClientByID(id string) (*models.Client, error) {
 	err := repo.Db.Where("ID = ?", id).First(&client).Error
 
 	return &client, err
+}
+
+func NewClientRepository() ClientRepository {
+	return &clientRepository{
+		Db: database.Db,
+	}
 }

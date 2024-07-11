@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/viniblima/atfilms/database"
 	"github.com/viniblima/atfilms/models"
 	"gorm.io/gorm"
 )
@@ -45,4 +46,10 @@ func (repo *jobRepository) GetJobBySlug(slug string) (*models.Job, error) {
 	err := repo.Db.Where("Slug = ?", slug).First(&job).Error
 
 	return &job, err
+}
+
+func NewJobRepository() JobRepository {
+	return &jobRepository{
+		Db: database.Db,
+	}
 }

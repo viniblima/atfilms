@@ -12,7 +12,6 @@ import (
 
 type UserController interface {
 	SignIn(c *fiber.Ctx) error
-	SignUp(c *fiber.Ctx) error
 }
 
 type userController struct {
@@ -32,7 +31,7 @@ type LoginStruct struct {
 	Password string `json:"Password" validate:"required"`
 }
 
-func (controller *userController) SignIn(c *fiber.Ctx) error {
+func (controller userController) SignIn(c *fiber.Ctx) error {
 
 	body := new(LoginStruct)
 
@@ -42,8 +41,9 @@ func (controller *userController) SignIn(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
 	}
-
+	print(body.Email)
 	u, errorU := controller.userRepo.GetUserByEmail(body.Email)
+	print(u)
 
 	checked := handlers.CheckHash(u.Password, body.Password)
 
@@ -64,46 +64,8 @@ func (controller *userController) SignIn(c *fiber.Ctx) error {
 
 }
 
-type SignUpStruct struct {
-	Email    string `json:"Email" validate:"required,email"`
-	Password string `json:"Password" validate:"required"`
-	Name     string `json:"Name" validate:"required"`
-}
-
-func (controller *userController) SignUp(c *fiber.Ctx) error {
-
-	body := new(SignUpStruct)
-
-	c.BodyParser(&body)
-
-	err := validator.New().Struct(body)
-	if err != nil {
-		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
-	}
-	user := models.User{
-		Name:     body.Name,
-		Password: body.Password,
-		Email:    body.Email,
-	}
-
-	// err = database.DB.Db.Create(&user).Error
-	newUser, err := controller.userRepo.CreateUser(&user)
-
-	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(handlers.NewJError(err))
-	}
-	json, errJwt := handlers.GenerateJWT(user.ID)
-
-	if errJwt != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Error on generate JWT"})
-	}
-
-	return c.Status(http.StatusCreated).JSON(fiber.Map{
-		"Auth": json,
-		"User": extractUserObj(*newUser),
-	})
-}
-
 func NewUserController() UserController {
-	return &userController{}
+	return &userController{
+		userRepo: repository.NewUserRepository(),
+	}
 }
