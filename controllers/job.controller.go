@@ -29,7 +29,7 @@ type CreateJobStruct struct {
 	ClientID string `json:"ClientID" validate:"required"`
 }
 
-func (controller *jobController) UpdateJob(c *fiber.Ctx) error {
+func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 	body := new(CreateJobStruct)
 
 	c.BodyParser(&body)
@@ -77,7 +77,7 @@ func (controller *jobController) UpdateJob(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(update)
 }
 
-func (controller *jobController) CreateJob(c *fiber.Ctx) error {
+func (controller jobController) CreateJob(c *fiber.Ctx) error {
 	body := new(CreateJobStruct)
 
 	c.BodyParser(&body)
@@ -112,7 +112,7 @@ func (controller *jobController) CreateJob(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(job)
 }
 
-func (controller *jobController) ListAllJobs(c *fiber.Ctx) error {
+func (controller jobController) ListAllJobs(c *fiber.Ctx) error {
 	jobs, err := controller.jobRepo.ListAllJobs()
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(err)
@@ -120,7 +120,7 @@ func (controller *jobController) ListAllJobs(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(&jobs)
 }
 
-func (controller *jobController) GetJobBySlug(c *fiber.Ctx) error {
+func (controller jobController) GetJobBySlug(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 
 	job, err := controller.jobRepo.GetJobBySlug(slug)
@@ -134,5 +134,7 @@ func (controller *jobController) GetJobBySlug(c *fiber.Ctx) error {
 }
 
 func NewJobController() JobController {
-	return &jobController{}
+	return &jobController{
+		jobRepo: repository.NewJobRepository(),
+	}
 }

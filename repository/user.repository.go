@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/viniblima/atfilms/database"
 	"github.com/viniblima/atfilms/models"
 	"gorm.io/gorm"
 )
@@ -24,4 +25,10 @@ func (repo *userRepository) GetUserByEmail(email string) (*models.User, error) {
 func (repo *userRepository) CreateUser(user *models.User) (*models.User, error) {
 	err := repo.Db.Create(user).Error
 	return user, err
+}
+
+func NewUserRepository() UserRepository {
+	return &userRepository{
+		Db: database.Db,
+	}
 }

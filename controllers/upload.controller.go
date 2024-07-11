@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gofiber/fiber/v2"
 	"github.com/viniblima/atfilms/handlers"
+	"github.com/viniblima/atfilms/repository"
 )
 
 type UploadController interface {
@@ -17,9 +18,10 @@ type UploadController interface {
 }
 
 type uploadController struct {
+	uploadRepo repository.UploadRepository
 }
 
-func (controller *uploadController) UploadItem(c *fiber.Ctx) error {
+func (controller uploadController) UploadItem(c *fiber.Ctx) error {
 	form, err := c.MultipartForm()
 	if err != nil {
 		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
@@ -57,5 +59,7 @@ func (controller *uploadController) UploadItem(c *fiber.Ctx) error {
 }
 
 func NewUploadController() UploadController {
-	return &uploadController{}
+	return &uploadController{
+		uploadRepo: repository.NewUploadRepository(),
+	}
 }

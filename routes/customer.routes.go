@@ -16,9 +16,10 @@ type clientRouter struct {
 }
 
 func SetupClientRoutes(api fiber.Router) {
-	router := clientRouter{}
-	router.clientController = controllers.NewClientController()
-	router.middleware = middlewares.NewJwtMiddleware()
+	router := &clientRouter{
+		clientController: controllers.NewClientController(),
+		middleware:       middlewares.NewJwtMiddleware(),
+	}
 
 	client_routes := api.Group("/clients") // Configuracao da rota pai
 

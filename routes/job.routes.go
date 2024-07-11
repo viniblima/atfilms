@@ -16,9 +16,10 @@ type jobRouter struct {
 }
 
 func SetupJobRoutes(api fiber.Router) {
-	router := jobRouter{}
-	router.jobController = controllers.NewJobController()
-	router.middleware = middlewares.NewJwtMiddleware()
+	router := &jobRouter{
+		jobController: controllers.NewJobController(),
+		middleware:    middlewares.NewJwtMiddleware(),
+	}
 
 	job_routes := api.Group("/jobs") // Configuracao da rota pai
 
