@@ -6,26 +6,26 @@ import (
 	"github.com/viniblima/atfilms/middlewares"
 )
 
-type ClientRouter interface {
-	SetupClientRoutes(api fiber.Router)
+type CustomerRouter interface {
+	SetupCustomerRoutes(api fiber.Router)
 }
 
-type clientRouter struct {
-	clientController controllers.ClientController
-	middleware       middlewares.JWTMiddleware
+type customerRouter struct {
+	customerController controllers.CustomerController
+	middleware         middlewares.JWTMiddleware
 }
 
-func SetupClientRoutes(api fiber.Router) {
-	router := &clientRouter{
-		clientController: controllers.NewClientController(),
-		middleware:       middlewares.NewJwtMiddleware(),
+func SetupCustomerRoutes(api fiber.Router) {
+	router := &customerRouter{
+		customerController: controllers.NewCustomerController(),
+		middleware:         middlewares.NewJwtMiddleware(),
 	}
 
-	client_routes := api.Group("/clients") // Configuracao da rota pai
+	Customer_routes := api.Group("/customers") // Configuracao da rota pai
 
-	client_routes.Post("/", router.middleware.VerifyJWT, router.clientController.CreateClient) // Criacao de cliente
-	client_routes.Get("/", router.middleware.VerifyJWT, router.clientController.ListClients)   // Lista de clientes
+	Customer_routes.Post("/", router.middleware.VerifyJWT, router.customerController.CreateCustomer) // Criacao de Customere
+	Customer_routes.Get("/", router.middleware.VerifyJWT, router.customerController.ListCustomers)   // Lista de Customeres
 
-	client_routes.Get("/:id", router.middleware.VerifyJWT, router.clientController.GetClientByID) // Detalhes de cliente
-	client_routes.Put("/:id", router.middleware.VerifyJWT, router.clientController.UpdateClient)  // Atualiza cliente
+	Customer_routes.Get("/:id", router.middleware.VerifyJWT, router.customerController.GetCustomerByID) // Detalhes de Customere
+	Customer_routes.Put("/:id", router.middleware.VerifyJWT, router.customerController.UpdateCustomer)  // Atualiza Customere
 }
