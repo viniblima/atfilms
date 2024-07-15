@@ -1,14 +1,19 @@
 package controllers
 
 import (
+	// "fmt"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gofiber/fiber/v2"
+
+	// uuid "github.com/satori/go.uuid"
 	"github.com/viniblima/atfilms/handlers"
 	"github.com/viniblima/atfilms/repository"
 )
@@ -22,40 +27,47 @@ type uploadController struct {
 }
 
 func (controller uploadController) UploadItem(c *fiber.Ctx) error {
-	form, err := c.MultipartForm()
+	file, err := c.FormFile("image")
 	if err != nil {
 		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
 	}
-	for formFieldName, fileHeaders := range form.File {
-		for _, fileHeader := range fileHeaders {
-			// process uploaded file here
 
-			sess := session.Must(session.NewSession())
+	newName := time.Now().Format("20060102150405")
+	split := strings.Split(file.Header.Get("Content-Type"), "image/")
+	fmt.Println(split)
 
-			// Create an uploader with the session and default options
-			uploader := s3manager.NewUploader(sess)
-			print(fileHeader)
-			f, err := os.Open(formFieldName)
-			if err != nil {
-				return fmt.Errorf("failed to open file %q, %v", formFieldName, err)
-			}
+	fileName := fmt.Sprintf("%s.%s", newName, split[1])
 
-			// Upload the file to S3.
-			result, err := uploader.Upload(&s3manager.UploadInput{
-				Bucket: aws.String(os.Getenv("AWS_BUCKET")),
-				Key:    aws.String(os.Getenv("AWS_ACCESS_KEY_ID")),
-				Body:   f,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to upload file, %v", err)
-			}
-			fmt.Printf("file uploaded to, %s\n", aws.StringValue(&result.Location))
-		}
+	folder := fmt.Sprintf("tmp/uploads/%s", fileName)
+	errSaveTmp := c.SaveFile(file, folder)
+
+	if errSaveTmp != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errSaveTmp})
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
-		"Msg": "OK",
+	f, errOpen := os.Open(folder)
+
+	if errOpen != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err})
+	}
+
+	// return c.Status(http.StatusOK).JSON(fiber.Map{"result": f})
+
+	sess := session.Must(session.NewSession())
+
+	uploader := s3manager.NewUploader(sess)
+
+	result, errUploader := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(os.Getenv("AWS_BUCKET")),
+		Key:    aws.String(os.Getenv("AWS_ACCESS_KEY_ID")),
+		Body:   f,
 	})
+
+	if errUploader != nil {
+		return c.Status(http.StatusBadRequest).JSON(errUploader)
+	}
+
+	return c.Status(http.StatusOK).JSON(result)
 }
 
 func NewUploadController() UploadController {

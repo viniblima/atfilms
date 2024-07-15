@@ -18,15 +18,15 @@ type JobController interface {
 }
 
 type jobController struct {
-	jobRepo    repository.JobRepository
-	clientRepo repository.ClientRepository
+	jobRepo      repository.JobRepository
+	customerRepo repository.CustomerRepository
 }
 
 type CreateJobStruct struct {
-	Name     string `json:"Name" validate:"required,min=3,max=32"`
-	Slug     string `json:"Slug" validate:"required,min=3,max=32"`
-	Content  string `json:"Content" validate:"required,min=3"`
-	ClientID string `json:"ClientID" validate:"required"`
+	Name       string `json:"Name" validate:"required,min=3,max=32"`
+	Slug       string `json:"Slug" validate:"required,min=3,max=32"`
+	Content    string `json:"Content" validate:"required,min=3"`
+	CustomerID string `json:"CustomerID" validate:"required"`
 }
 
 func (controller jobController) UpdateJob(c *fiber.Ctx) error {
@@ -48,11 +48,11 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 		})
 	}
 
-	client, errClient := controller.clientRepo.GetClientByID(body.ClientID)
+	Customer, errCustomer := controller.customerRepo.GetCustomerByID(body.CustomerID)
 
-	if errClient != nil {
+	if errCustomer != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": "Client not found",
+			"error": "Customer not found",
 		})
 	}
 
@@ -60,10 +60,10 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 	// 	Name:    body.Name,
 	// 	Slug:    body.Slug,
 	// 	Content: body.Content,
-	// 	// Client:  client,
+	// 	// Customer:  Customer,
 	// }
 
-	jobFound.Client = client
+	jobFound.Customer = Customer
 	jobFound.Name = body.Name
 	jobFound.Slug = body.Slug
 	jobFound.Content = body.Content
@@ -87,11 +87,11 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
 	}
 
-	client, errClient := controller.clientRepo.GetClientByID(body.ClientID)
+	Customer, errCustomer := controller.customerRepo.GetCustomerByID(body.CustomerID)
 
-	if errClient != nil {
+	if errCustomer != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": "Client not found",
+			"error": "Customer not found",
 		})
 	}
 
@@ -99,9 +99,9 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 		Name:    body.Name,
 		Slug:    body.Slug,
 		Content: body.Content,
-		// Client:  client,
+		// Customer:  Customer,
 	}
-	newJob.Client = client
+	newJob.Customer = Customer
 
 	job, errJob := controller.jobRepo.CreateJob(&newJob)
 

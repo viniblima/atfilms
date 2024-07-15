@@ -7,12 +7,12 @@ import (
 
 type Job struct {
 	gorm.Model
-	ID       string  `gorm:"primaryKey"`
-	Name     string  `json:"Name" validate:"required,min=3,max=32"`
-	Slug     string  `json:"Slug" validate:"required,min=3,max=32"`
-	Content  string  `json:"Content" validate:"required,min=3"`
-	ClientID string  `json:"ClientID" validate:"required"`
-	Client   *Client `gorm:"foreignKey:ClientID" json:"Client"`
+	ID         string    `gorm:"primaryKey"`
+	Name       string    `json:"Name" validate:"required,min=3,max=32"`
+	Slug       string    `json:"Slug" validate:"required,min=3,max=32"`
+	Content    string    `json:"Content" validate:"required,min=3"`
+	CustomerID string    `json:"CustomerID" validate:"required"`
+	Customer   *Customer `gorm:"foreignKey:CustomerID" json:"Customer"`
 }
 
 func (m *Job) BeforeCreate(db *gorm.DB) (err error) {

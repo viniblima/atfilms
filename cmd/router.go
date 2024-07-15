@@ -21,6 +21,7 @@ func setupV1Routes(api fiber.Router) {
 	v1 := api.Group("/v1")
 
 	routes.SetupUserRoutes(v1)
-	routes.SetupClientRoutes(v1)
+	routes.SetupCustomerRoutes(v1)
 	routes.SetupJobRoutes(v1)
+	routes.SetupUploadRoutes(v1)
 }

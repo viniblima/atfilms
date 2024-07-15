@@ -1,0 +1,99 @@
+package controllers
+
+import (
+	"net/http"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+	"github.com/viniblima/atfilms/handlers"
+	"github.com/viniblima/atfilms/models"
+	"github.com/viniblima/atfilms/repository"
+)
+
+type CustomerController interface {
+	CreateCustomer(ctx *fiber.Ctx) error
+	UpdateCustomer(ctx *fiber.Ctx) error
+	ListCustomers(ctx *fiber.Ctx) error
+	GetCustomerByID(c *fiber.Ctx) error
+}
+
+type customerController struct {
+	customerRepo repository.CustomerRepository
+}
+
+type CreateCustomerStruct struct {
+	Name string `json:"Name" validate:"required,min=3,max=32"`
+}
+
+func (controller customerController) CreateCustomer(c *fiber.Ctx) error {
+	body := new(CreateCustomerStruct)
+	c.BodyParser(&body)
+	err := validator.New().Struct(body)
+	if err != nil {
+		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
+	}
+	customer := models.Customer{
+		Name: body.Name,
+	}
+	newCustomer, err := controller.customerRepo.CreateCustomer(&customer)
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(err)
+	}
+
+	return c.Status(http.StatusCreated).JSON(newCustomer)
+}
+
+func (controller customerController) GetCustomerByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+	customer, errCustomer := controller.customerRepo.GetCustomerByID(id)
+
+	if errCustomer != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Customer not found",
+		})
+	}
+	return c.Status(http.StatusOK).JSON(customer)
+}
+
+func (controller customerController) UpdateCustomer(c *fiber.Ctx) error {
+	body := new(CreateCustomerStruct)
+	c.BodyParser(&body)
+	err := validator.New().Struct(body)
+	if err != nil {
+		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
+	}
+
+	id := c.Params("id")
+
+	customer, errCustomer := controller.customerRepo.GetCustomerByID(id)
+
+	if errCustomer != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Customer not found",
+		})
+	}
+
+	customer.Name = body.Name
+
+	controller.customerRepo.UpdateCustomer(customer)
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+
+		"Customer": *customer,
+	})
+}
+
+func (controller customerController) ListCustomers(c *fiber.Ctx) error {
+	customers, err := controller.customerRepo.ListCustomers()
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(err)
+	}
+	return c.Status(http.StatusOK).JSON(&customers)
+}
+
+func NewCustomerController() CustomerController {
+	return &customerController{
+		customerRepo: repository.NewCustomerRepository(),
+	}
+}
