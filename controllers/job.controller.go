@@ -56,14 +56,7 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 		})
 	}
 
-	// newJob := models.Job{
-	// 	Name:    body.Name,
-	// 	Slug:    body.Slug,
-	// 	Content: body.Content,
-	// 	// Customer:  Customer,
-	// }
-
-	jobFound.Customer = Customer
+	jobFound.Customer = *Customer
 	jobFound.Name = body.Name
 	jobFound.Slug = body.Slug
 	jobFound.Content = body.Content
@@ -87,7 +80,7 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
 	}
 
-	Customer, errCustomer := controller.customerRepo.GetCustomerByID(body.CustomerID)
+	customer, errCustomer := controller.customerRepo.GetCustomerByID(body.CustomerID)
 
 	if errCustomer != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
@@ -99,9 +92,9 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 		Name:    body.Name,
 		Slug:    body.Slug,
 		Content: body.Content,
-		// Customer:  Customer,
+		// Customer: customer,
 	}
-	newJob.Customer = Customer
+	newJob.Customer = *customer
 
 	job, errJob := controller.jobRepo.CreateJob(&newJob)
 
@@ -126,9 +119,16 @@ func (controller jobController) GetJobBySlug(c *fiber.Ctx) error {
 	job, err := controller.jobRepo.GetJobBySlug(slug)
 
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": "Job not found",
-		})
+
+		job, err := controller.jobRepo.GetJobByID(slug)
+
+		if err != nil {
+
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"error": "Job not found",
+			})
+		}
+		return c.Status(http.StatusOK).JSON(job)
 	}
 	return c.Status(http.StatusOK).JSON(job)
 }

@@ -21,6 +21,6 @@ func SetupUploadRoutes(api fiber.Router) {
 		middleware:       middlewares.NewJwtMiddleware(),
 	}
 
-	upload_routes := api.Group("/upload")                                                    // Configuracao da rota pai
-	upload_routes.Post("/", router.middleware.VerifyJWT, router.uploadController.UploadItem) // Upload de foto
+	upload_routes := api.Group("/upload")                                                                        // Configuracao da rota pai
+	upload_routes.Post("/customer/:id", router.middleware.VerifyJWT, router.uploadController.UploadCustomerLogo) // Upload de foto
 }
