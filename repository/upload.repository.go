@@ -11,6 +11,10 @@ type uploadRepository struct {
 }
 
 type UploadRepository interface {
+	CreatePhoto(c *models.Photo) (*models.Photo, error)
+	CreateVideo(c *models.Video) (*models.Video, error)
+	RemovePhotoByID(id string) error
+	RemoveVideoByID(id string) error
 }
 
 func (r *uploadRepository) CreatePhoto(c *models.Photo) (*models.Photo, error) {

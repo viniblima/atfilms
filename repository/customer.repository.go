@@ -14,12 +14,12 @@ type CustomerRepository interface {
 	CreateCustomer(c *models.Customer) (*models.Customer, error)
 	ListCustomers() (*[]models.Customer, error)
 	UpdateCustomer(customer *models.Customer) (*models.Customer, error)
-	RemoveCustomerByID(id string) error
+	RemoveCustomerByID(*models.Customer) error
 	GetCustomerByID(id string) (*models.Customer, error)
 }
 
 func (r *customerRepository) CreateCustomer(c *models.Customer) (*models.Customer, error) {
-	err := r.Db.Create(c).Error
+	err := r.Db.Omit("Logo").Create(c).Error
 	return c, err
 }
 
@@ -35,15 +35,14 @@ func (repo *customerRepository) UpdateCustomer(customer *models.Customer) (*mode
 	return customer, err
 }
 
-func (repo *customerRepository) RemoveCustomerByID(id string) error {
-	var Customer models.Customer
-	err := repo.Db.Model(&models.Customer{}).Where("ID = ?", id).Delete(Customer).Error
+func (repo *customerRepository) RemoveCustomerByID(customer *models.Customer) error {
+	err := repo.Db.Delete(customer).Error
 	return err
 }
 
 func (repo *customerRepository) GetCustomerByID(id string) (*models.Customer, error) {
 	var Customer models.Customer
-	err := repo.Db.Where("ID = ?", id).Preload("Photo").First(&Customer).Error
+	err := repo.Db.Where("ID = ?", id).Preload("Logo").First(&Customer).Error
 
 	return &Customer, err
 }

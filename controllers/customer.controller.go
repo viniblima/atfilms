@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -15,6 +17,7 @@ type CustomerController interface {
 	UpdateCustomer(ctx *fiber.Ctx) error
 	ListCustomers(ctx *fiber.Ctx) error
 	GetCustomerByID(c *fiber.Ctx) error
+	RemoveCustomer(c *fiber.Ctx) error
 }
 
 type customerController struct {
@@ -86,10 +89,38 @@ func (controller customerController) UpdateCustomer(c *fiber.Ctx) error {
 
 func (controller customerController) ListCustomers(c *fiber.Ctx) error {
 	customers, err := controller.customerRepo.ListCustomers()
+
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(err)
 	}
 	return c.Status(http.StatusOK).JSON(&customers)
+}
+
+func (controller customerController) RemoveCustomer(c *fiber.Ctx) error {
+
+	id := c.Params("id")
+
+	customer, errCustomer := controller.customerRepo.GetCustomerByID(id)
+
+	if errCustomer != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Customer not found",
+		})
+	}
+
+	folder := fmt.Sprintf("tmp/uploads/%s", customer.Logo.FileName)
+
+	os.Remove(folder)
+
+	errR := controller.customerRepo.RemoveCustomerByID(customer)
+
+	if errR != nil {
+		return c.Status(http.StatusBadRequest).JSON(errR)
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"Msg": "Customer removed",
+	})
 }
 
 func NewCustomerController() CustomerController {
