@@ -1,6 +1,6 @@
 module github.com/viniblima/atfilms
 
-go 1.22.4
+go 1.22
 
 require github.com/gofiber/fiber/v2 v2.52.5
 
