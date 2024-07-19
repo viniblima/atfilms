@@ -16,6 +16,7 @@ type CustomerRepository interface {
 	UpdateCustomer(customer *models.Customer) (*models.Customer, error)
 	RemoveCustomerByID(*models.Customer) error
 	GetCustomerByID(id string) (*models.Customer, error)
+	GetCustomersHome() (*[]models.Customer, error)
 }
 
 func (r *customerRepository) CreateCustomer(c *models.Customer) (*models.Customer, error) {
@@ -26,7 +27,6 @@ func (r *customerRepository) CreateCustomer(c *models.Customer) (*models.Custome
 func (r *customerRepository) ListCustomers() (*[]models.Customer, error) {
 	var ls []models.Customer
 	err := r.Db.Preload("Logo").Find(&ls).Error
-	// err := r.Db.Model(&models.Customer{}).Find(&ls).Error
 	return &ls, err
 }
 
@@ -45,6 +45,12 @@ func (repo *customerRepository) GetCustomerByID(id string) (*models.Customer, er
 	err := repo.Db.Where("ID = ?", id).Preload("Logo").First(&Customer).Error
 
 	return &Customer, err
+}
+
+func (repo *customerRepository) GetCustomersHome() (*[]models.Customer, error) {
+	var ls []models.Customer
+	err := repo.Db.Where("show_in_home = ?", true).Preload("Logo").Find(&ls).Error
+	return &ls, err
 }
 
 func NewCustomerRepository() CustomerRepository {

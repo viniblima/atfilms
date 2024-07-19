@@ -13,6 +13,7 @@ type Job struct {
 	Content    string   `json:"Content" validate:"required,min=3"`
 	CustomerID string   `json:"CustomerID" validate:"required"`
 	Customer   Customer `gorm:"foreignKey:CustomerID" json:"Customer"`
+	ShowInHome bool     `json:"ShowInHome" validate:"required"`
 }
 
 func (m *Job) BeforeCreate(db *gorm.DB) (err error) {

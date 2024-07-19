@@ -16,6 +16,7 @@ type JobRepository interface {
 	UpdateJob(m *models.Job) (*models.Job, error)
 	GetJobByID(id string) (*models.Job, error)
 	GetJobBySlug(slug string) (*models.Job, error)
+	GetJobsHome() (*[]models.Job, error)
 }
 
 func (r *jobRepository) CreateJob(m *models.Job) (*models.Job, error) {
@@ -46,6 +47,12 @@ func (repo *jobRepository) GetJobBySlug(slug string) (*models.Job, error) {
 	err := repo.Db.Where("Slug = ?", slug).First(&job).Error
 
 	return &job, err
+}
+
+func (repo *jobRepository) GetJobsHome() (*[]models.Job, error) {
+	var ls []models.Job
+	err := repo.Db.Where("show_in_home = ?", true).Find(&ls).Error
+	return &ls, err
 }
 
 func NewJobRepository() JobRepository {
