@@ -20,5 +20,5 @@ func main() {
 	print("static")
 	// app.Static("/upload", "./uploads")
 	print("listen")
-	app.Listen(":3000")
+	app.Listen(":8080")
 }
