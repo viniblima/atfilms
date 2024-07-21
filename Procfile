@@ -1,1 +1,1 @@
-web: bin/atfilms
+web: bin/cmd

@@ -2,5 +2,5 @@ name: atfilms
 services:
   - name: web
     github:
-      repo: github/atfilms
+      repo: github/viniblima/atfilms
       branch: main
