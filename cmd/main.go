@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/viniblima/atfilms/database"
 )
 
 /*
@@ -13,12 +14,12 @@ Inicia o projeto com a seguinte ordem:
 */
 func main() {
 	print("connectDB")
-	// database.ConnectDb()
+	database.ConnectDb()
 	app := fiber.New()
 	print("setupRoutes")
-	// setupRoutes(app)
+	setupRoutes(app)
 	print("static")
-	// app.Static("/upload", "./uploads")
+	app.Static("/upload", "./uploads")
 	print("listen")
 	app.Listen(":8080")
 }
