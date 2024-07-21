@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/viniblima/atfilms/database"
 )
 
 /*
@@ -13,9 +12,13 @@ Inicia o projeto com a seguinte ordem:
 3. Inicia a subscricao na devida porta
 */
 func main() {
-	database.ConnectDb()
+	print("connectDB")
+	// database.ConnectDb()
 	app := fiber.New()
+	print("setupRoutes")
 	setupRoutes(app)
+	print("static")
 	app.Static("/upload", "./uploads")
+	print("listen")
 	app.Listen(":3000")
 }
