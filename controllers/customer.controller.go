@@ -22,7 +22,6 @@ type CustomerController interface {
 
 type customerController struct {
 	customerRepo repository.CustomerRepository
-	uploadRepo   repository.UploadRepository
 }
 
 type CreateCustomerStruct struct {
@@ -129,12 +128,6 @@ func (controller customerController) RemoveCustomer(c *fiber.Ctx) error {
 
 	if errR != nil {
 		return c.Status(http.StatusBadRequest).JSON(errR)
-	}
-	photo := customer.Logo
-	errRP := controller.uploadRepo.RemovePhoto(&photo)
-
-	if errRP != nil {
-		return c.Status(http.StatusBadRequest).JSON(errRP)
 	}
 
 	ls, errLs := controller.customerRepo.ListCustomers()
