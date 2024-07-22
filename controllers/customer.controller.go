@@ -25,7 +25,8 @@ type customerController struct {
 }
 
 type CreateCustomerStruct struct {
-	Name string `json:"Name" validate:"required,min=3,max=32"`
+	Name       string `json:"Name" validate:"required,min=3,max=32"`
+	ShowInHome bool   `json:"ShowInHome" validate:"required"`
 }
 
 func (controller customerController) CreateCustomer(c *fiber.Ctx) error {
@@ -36,7 +37,8 @@ func (controller customerController) CreateCustomer(c *fiber.Ctx) error {
 		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
 	}
 	customer := models.Customer{
-		Name: body.Name,
+		Name:       body.Name,
+		ShowInHome: body.ShowInHome,
 	}
 	newCustomer, err := controller.customerRepo.CreateCustomer(&customer)
 
@@ -78,6 +80,7 @@ func (controller customerController) UpdateCustomer(c *fiber.Ctx) error {
 	}
 
 	customer.Name = body.Name
+	customer.ShowInHome = body.ShowInHome
 
 	controller.customerRepo.UpdateCustomer(customer)
 
