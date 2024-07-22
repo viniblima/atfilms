@@ -138,7 +138,6 @@ func (controller customerController) RemoveCustomer(c *fiber.Ctx) error {
 
 	for i := 0; i < len(*ls); i++ {
 		newCs := (*ls)[i]
-		print(newCs)
 		newCs.Position = i
 		controller.customerRepo.UpdateCustomer(&newCs)
 	}
