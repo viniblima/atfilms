@@ -46,6 +46,7 @@ func (controller customerController) CreateCustomer(c *fiber.Ctx) error {
 	customer := models.Customer{
 		Name:       body.Name,
 		ShowInHome: &body.ShowInHome,
+		Index:      body.Index,
 	}
 	newCustomer, err := controller.customerRepo.CreateCustomer(&customer)
 
