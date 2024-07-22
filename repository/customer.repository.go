@@ -26,7 +26,7 @@ func (r *customerRepository) CreateCustomer(c *models.Customer) (*models.Custome
 
 func (r *customerRepository) ListCustomers() (*[]models.Customer, error) {
 	var ls []models.Customer
-	err := r.Db.Preload("Logo").Find(&ls).Error
+	err := r.Db.Preload("Logo").Order("position").Find(&ls).Error
 	return &ls, err
 }
 
