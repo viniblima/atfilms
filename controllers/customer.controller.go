@@ -27,7 +27,7 @@ type customerController struct {
 type CreateCustomerStruct struct {
 	Name       string `json:"Name" validate:"required,min=3,max=32"`
 	ShowInHome bool   `json:"ShowInHome"`
-	Position   uint   `json:"Position" validate:"required"`
+	Position   int    `json:"Position" validate:"required"`
 }
 
 func (controller customerController) CreateCustomer(c *fiber.Ctx) error {
@@ -37,16 +37,16 @@ func (controller customerController) CreateCustomer(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
 	}
-	// ls, errLs := controller.customerRepo.ListCustomers()
+	ls, errLs := controller.customerRepo.ListCustomers()
 
-	// if errLs != nil {
-	// 	return c.Status(http.StatusBadRequest).JSON(errLs)
-	// }
+	if errLs != nil {
+		return c.Status(http.StatusBadRequest).JSON(errLs)
+	}
 
 	customer := models.Customer{
 		Name:       body.Name,
 		ShowInHome: &body.ShowInHome,
-		// Index:      body.Index,
+		Position:   len(*ls),
 	}
 	newCustomer, err := controller.customerRepo.CreateCustomer(&customer)
 
@@ -128,6 +128,18 @@ func (controller customerController) RemoveCustomer(c *fiber.Ctx) error {
 
 	if errR != nil {
 		return c.Status(http.StatusBadRequest).JSON(errR)
+	}
+
+	ls, errLs := controller.customerRepo.ListCustomers()
+
+	if errLs != nil {
+		return c.Status(http.StatusBadRequest).JSON(errLs)
+	}
+
+	for i := 0; i < len(*ls); i++ {
+		newCs := (*ls)[i]
+		newCs.Position = i
+		controller.customerRepo.UpdateCustomer(&newCs)
 	}
 
 	return c.Status(http.StatusOK).JSON(fiber.Map{
