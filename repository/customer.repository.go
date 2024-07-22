@@ -36,7 +36,7 @@ func (repo *customerRepository) UpdateCustomer(customer *models.Customer) (*mode
 }
 
 func (repo *customerRepository) RemoveCustomerByID(customer *models.Customer) error {
-	err := repo.Db.Unscoped().Delete(customer).Error
+	err := repo.Db.Delete(customer).Error
 	return err
 }
 
