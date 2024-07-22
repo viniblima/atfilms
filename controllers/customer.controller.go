@@ -26,8 +26,8 @@ type customerController struct {
 
 type CreateCustomerStruct struct {
 	Name       string `json:"Name" validate:"required,min=3,max=32"`
-	ShowInHome bool   `json:"ShowInHome" validate:"required"`
-	Index      int    `json:"Index" validate:"required"`
+	ShowInHome bool   `json:"ShowInHome"`
+	Index      int    `json:"Index" validate:"required, min=0"`
 }
 
 func (controller customerController) CreateCustomer(c *fiber.Ctx) error {
