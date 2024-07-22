@@ -13,8 +13,8 @@ type uploadRepository struct {
 type UploadRepository interface {
 	CreatePhoto(c *models.Photo) (*models.Photo, error)
 	CreateVideo(c *models.Video) (*models.Video, error)
-	RemovePhotoByID(id string) error
-	RemoveVideoByID(id string) error
+	RemovePhoto(c *models.Photo) error
+	RemoveVideo(c *models.Video) error
 }
 
 func (r *uploadRepository) CreatePhoto(c *models.Photo) (*models.Photo, error) {
@@ -27,15 +27,13 @@ func (r *uploadRepository) CreateVideo(c *models.Video) (*models.Video, error) {
 	return c, err
 }
 
-func (repo *uploadRepository) RemovePhotoByID(id string) error {
-	var photo models.Photo
-	err := repo.Db.Model(&models.Photo{}).Where("ID = ?", id).Delete(photo).Error
+func (repo *uploadRepository) RemovePhoto(photo *models.Photo) error {
+	err := repo.Db.Delete(photo).Error
 	return err
 }
 
-func (repo *uploadRepository) RemoveVideoByID(id string) error {
-	var video models.Video
-	err := repo.Db.Model(&models.Video{}).Where("ID = ?", id).Delete(video).Error
+func (repo *uploadRepository) RemoveVideo(video *models.Video) error {
+	err := repo.Db.Delete(video).Error
 	return err
 }
 

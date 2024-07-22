@@ -130,8 +130,8 @@ func (controller customerController) RemoveCustomer(c *fiber.Ctx) error {
 	if errR != nil {
 		return c.Status(http.StatusBadRequest).JSON(errR)
 	}
-
-	errRP := controller.uploadRepo.RemovePhotoByID(customer.Logo.ID)
+	photo := customer.Logo
+	errRP := controller.uploadRepo.RemovePhoto(&photo)
 
 	if errRP != nil {
 		return c.Status(http.StatusBadRequest).JSON(errRP)
