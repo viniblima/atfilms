@@ -31,7 +31,7 @@ func (r *customerRepository) ListCustomers() (*[]models.Customer, error) {
 }
 
 func (repo *customerRepository) UpdateCustomer(customer *models.Customer) (*models.Customer, error) {
-	err := repo.Db.Save(customer).Error
+	err := repo.Db.Omit("Logo").Save(customer).Error
 	return customer, err
 }
 
