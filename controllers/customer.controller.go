@@ -27,7 +27,7 @@ type customerController struct {
 type CreateCustomerStruct struct {
 	Name       string `json:"Name" validate:"required,min=3,max=32"`
 	ShowInHome bool   `json:"ShowInHome"`
-	Index      uint   `json:"Index" validate:"required" gorm:"autoIncrement"`
+	Position   uint   `json:"Position" validate:"required"`
 }
 
 func (controller customerController) CreateCustomer(c *fiber.Ctx) error {
@@ -89,7 +89,7 @@ func (controller customerController) UpdateCustomer(c *fiber.Ctx) error {
 
 	customer.Name = body.Name
 	customer.ShowInHome = &body.ShowInHome
-	customer.Index = body.Index
+	customer.Position = body.Position
 
 	controller.customerRepo.UpdateCustomer(customer)
 
