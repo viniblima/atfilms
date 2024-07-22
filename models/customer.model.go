@@ -10,8 +10,8 @@ type Customer struct {
 	ID         string `gorm:"primaryKey"`
 	Name       string `json:"Name" validate:"required,min=3,max=32"`
 	Logo       Photo  `gorm:"foreignKey:ReferenceID"`
-	ShowInHome bool   `json:"ShowInHome"`
-	Index      int    `json:"Index" validate:"required`
+	ShowInHome *bool  `json:"ShowInHome"`
+	Index      uint   `json:"Index" validate:"required" gorm:"unique;autoIncrement"`
 }
 
 func (m *Customer) BeforeCreate(db *gorm.DB) (err error) {
