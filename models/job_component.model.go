@@ -11,10 +11,10 @@ type JobComponent struct {
 	Type                jobComponentType `json:"Type" validate:"required"`
 	Title               string
 	Text                string
-	Slider              []Photo
-	Videos              []Video
-	FillPhotoHorizontal Photo
-	Position            int `json:"Position" validate:"required"`
+	Slider              []Photo `gorm:"foreignKey:ReferenceID"`
+	Videos              []Video `gorm:"foreignKey:ReferenceID"`
+	FillPhotoHorizontal Photo   `gorm:"foreignKey:ReferenceID"`
+	Position            int     `json:"Position" validate:"required"`
 }
 
 func (m *JobComponent) BeforeCreate(db *gorm.DB) (err error) {
