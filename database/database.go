@@ -43,9 +43,9 @@ func ConnectDb() {
 		&models.Customer{},
 		&models.Photo{},
 		&models.Video{},
-		&models.Job{},
-		&models.Tag{},
 		&models.JobComponent{},
+		&models.Tag{},
+		&models.Job{},
 	)
 
 	newUser := models.User{
