@@ -8,6 +8,7 @@ import (
 type JobComponent struct {
 	gorm.Model
 	ID                  string           `gorm:"primaryKey"`
+	JobID               string           `json:"JobID" validate:"required"`
 	Type                jobComponentType `json:"Type" validate:"required"`
 	Title               string
 	Text                string
