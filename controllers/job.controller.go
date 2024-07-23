@@ -23,11 +23,11 @@ type jobController struct {
 }
 
 type CreateJobStruct struct {
-	Name       string `json:"Name" validate:"required,min=3,max=32"`
-	Slug       string `json:"Slug" validate:"required,min=3,max=32"`
-	Content    string `json:"Content" validate:"required,min=3"`
-	CustomerID string `json:"CustomerID" validate:"required"`
-	ShowInHome bool   `json:"ShowInHome" validate:"required"`
+	Name       string                `json:"Name" validate:"required,min=3,max=32"`
+	Slug       string                `json:"Slug" validate:"required,min=3,max=32"`
+	CustomerID string                `json:"CustomerID" validate:"required"`
+	ShowInHome bool                  `json:"ShowInHome" validate:"required"`
+	Components []models.JobComponent `json:"Components"`
 }
 
 func (controller jobController) UpdateJob(c *fiber.Ctx) error {
@@ -60,7 +60,6 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 	jobFound.Customer = *Customer
 	jobFound.Name = body.Name
 	jobFound.Slug = body.Slug
-	jobFound.Content = body.Content
 	jobFound.ShowInHome = body.ShowInHome
 
 	update, errUpdate := controller.jobRepo.UpdateJob(jobFound)
@@ -93,9 +92,8 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 	newJob := models.Job{
 		Name:       body.Name,
 		Slug:       body.Slug,
-		Content:    body.Content,
 		ShowInHome: body.ShowInHome,
-		// Customer: customer,
+		Components: body.Components,
 	}
 	newJob.Customer = *customer
 
