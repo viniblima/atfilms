@@ -132,7 +132,7 @@ func (controller uploadController) UploadJobPhoto(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errPhoto})
 	}
 
-	job.Placeholder = *photo
+	job.Placeholder = photo
 
 	updateJob, errUpdate := controller.jobRepo.UpdateJob(job)
 
@@ -183,7 +183,7 @@ func (controller uploadController) UploadJobVideo(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errVideo})
 	}
 
-	job.Video = *video
+	job.Video = video
 
 	updateJob, errUpdate := controller.jobRepo.UpdateJob(job)
 

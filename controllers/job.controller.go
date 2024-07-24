@@ -93,7 +93,7 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 		Name:       body.Name,
 		Slug:       body.Slug,
 		ShowInHome: body.ShowInHome,
-		Components: body.Components,
+		Components: &body.Components,
 	}
 	newJob.Customer = *customer
 
