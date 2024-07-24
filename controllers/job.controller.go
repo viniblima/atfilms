@@ -26,7 +26,7 @@ type CreateJobStruct struct {
 	Name       string                `json:"Name" validate:"required,min=3,max=32"`
 	Slug       string                `json:"Slug" validate:"required,min=3,max=32"`
 	CustomerID string                `json:"CustomerID" validate:"required"`
-	ShowInHome bool                  `json:"ShowInHome" validate:"required"`
+	ShowInHome bool                  `json:"ShowInHome" `
 	Components []models.JobComponent `json:"Components"`
 }
 
