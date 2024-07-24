@@ -39,6 +39,7 @@ func ConnectDb() {
 
 	log.Println("running migrations")
 	db.AutoMigrate(
+
 		&models.User{},
 		&models.Customer{},
 		&models.Photo{},

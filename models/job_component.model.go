@@ -12,9 +12,9 @@ type JobComponent struct {
 	Type                jobComponentType `json:"Type" validate:"required"`
 	Title               string
 	Text                string
-	Slider              []Photo `json:"Slider" gorm:"foreignKey:ReferenceID"`
+	Slider              []Photo `json:"Slider" gorm:"foreignKey:SliderID"`
 	Videos              []Video `json:"Videos" gorm:"foreignKey:ReferenceID"`
-	FillPhotoHorizontal Photo   `json:"FillPhotoHorizontal" gorm:"foreignKey:ReferenceID"`
+	FillPhotoHorizontal Photo   `json:"FillPhotoHorizontal" gorm:"foreignKey:FillPhotoHorizontalID"`
 	Position            int     `json:"Position" validate:"required"`
 }
 

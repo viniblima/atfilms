@@ -7,9 +7,12 @@ import (
 
 type Photo struct {
 	gorm.Model
-	ID          string `gorm:"primaryKey"`
-	ReferenceID string `json:"ReferenceID" validate:"required"`
-	FileName    string `json:"FileName" validate:"required"`
+	ID                    string `gorm:"primaryKey"`
+	ReferenceID           string `json:"ReferenceID" `
+	PlaceholderID         string
+	SliderID              string
+	FillPhotoHorizontalID string
+	FileName              string `json:"FileName" validate:"required"`
 }
 
 func (m *Photo) BeforeCreate(db *gorm.DB) (err error) {
