@@ -28,4 +28,5 @@ func SetupJobRoutes(api fiber.Router) {
 	job_routes.Get("/:slug", router.jobController.GetJobBySlug)                         // Detalhes de Job via slug
 	job_routes.Put("/:id", router.middleware.VerifyJWT, router.jobController.UpdateJob) // Detalhes de job
 
+	job_routes.Delete("/:id", router.middleware.VerifyJWT, router.jobController.RemoveJob) // Remove job
 }

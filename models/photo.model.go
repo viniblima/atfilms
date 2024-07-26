@@ -7,11 +7,11 @@ import (
 
 type Photo struct {
 	gorm.Model
-	ID                    string `gorm:"primaryKey"`
-	ReferenceID           string `json:"ReferenceID" `
-	PlaceholderID         string
-	SliderID              string
-	FillPhotoHorizontalID string
+	ID                    string  `gorm:"primaryKey"`
+	LogoID                *string `json:"LogoID" `
+	PlaceholderID         *string
+	SliderID              *string
+	FillPhotoHorizontalID *string
 	FileName              string `json:"FileName" validate:"required"`
 }
 

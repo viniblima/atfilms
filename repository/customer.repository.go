@@ -20,7 +20,7 @@ type CustomerRepository interface {
 }
 
 func (r *customerRepository) CreateCustomer(c *models.Customer) (*models.Customer, error) {
-	err := r.Db.Omit("Logo").Create(c).Error
+	err := r.Db.Create(&c).Error
 	return c, err
 }
 
@@ -36,13 +36,13 @@ func (repo *customerRepository) UpdateCustomer(customer *models.Customer) (*mode
 }
 
 func (repo *customerRepository) RemoveCustomerByID(customer *models.Customer) error {
-	err := repo.Db.Delete(customer).Error
+	err := repo.Db.Delete(&customer).Error
 	return err
 }
 
 func (repo *customerRepository) GetCustomerByID(id string) (*models.Customer, error) {
 	var Customer models.Customer
-	err := repo.Db.Where("ID = ?", id).Preload("Logo").First(&Customer).Error
+	err := repo.Db.Where("ID = ?", id).First(&Customer).Error
 
 	return &Customer, err
 }

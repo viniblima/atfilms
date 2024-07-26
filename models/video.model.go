@@ -7,9 +7,10 @@ import (
 
 type Video struct {
 	gorm.Model
-	ID          string `gorm:"primaryKey"`
-	ReferenceID string `json:"ReferenceID" validate:"required"`
-	FileName    string `json:"FileName" validate:"required"`
+	ID                   string `gorm:"primaryKey"`
+	MainVideoID          *string
+	JobComponentVideosID *string
+	FileName             string `json:"FileName" validate:"required"`
 }
 
 func (m *Video) BeforeCreate(db *gorm.DB) (err error) {

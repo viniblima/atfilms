@@ -41,12 +41,12 @@ func ConnectDb() {
 	db.AutoMigrate(
 
 		&models.User{},
+		&models.Job{},
 		&models.Customer{},
 		&models.Photo{},
 		&models.Video{},
 		&models.JobComponent{},
 		&models.Tag{},
-		&models.Job{},
 	)
 
 	newUser := models.User{

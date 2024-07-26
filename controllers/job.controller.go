@@ -15,6 +15,7 @@ type JobController interface {
 	UpdateJob(c *fiber.Ctx) error
 	ListAllJobs(c *fiber.Ctx) error
 	GetJobBySlug(c *fiber.Ctx) error
+	RemoveJob(c *fiber.Ctx) error
 }
 
 type jobController struct {
@@ -57,7 +58,7 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 		})
 	}
 
-	jobFound.Customer = *Customer
+	jobFound.Customer = Customer
 	jobFound.Name = body.Name
 	jobFound.Slug = body.Slug
 	jobFound.ShowInHome = body.ShowInHome
@@ -93,9 +94,10 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 		Name:       body.Name,
 		Slug:       body.Slug,
 		ShowInHome: body.ShowInHome,
-		Components: body.Components,
+		// Components: body.Components,
 	}
-	newJob.Customer = *customer
+	newJob.Customer = customer
+	newJob.CustomerID = customer.ID
 
 	job, errJob := controller.jobRepo.CreateJob(&newJob)
 
@@ -117,7 +119,7 @@ func (controller jobController) ListAllJobs(c *fiber.Ctx) error {
 func (controller jobController) GetJobBySlug(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 
-	job, err := controller.jobRepo.GetJobBySlug(slug)
+	job, err := controller.jobRepo.GetJobByID(slug)
 
 	if err != nil {
 
@@ -134,8 +136,38 @@ func (controller jobController) GetJobBySlug(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(job)
 }
 
+func (controller jobController) RemoveJob(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	job, errJob := controller.jobRepo.GetJobByID(id)
+
+	if errJob != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Job not found",
+		})
+	}
+
+	resultRemove, errRemove := handlers.RemoveS3(job.Placeholder.FileName)
+
+	if errRemove != nil {
+		return c.Status(http.StatusBadRequest).JSON(errRemove)
+	}
+
+	errR := controller.jobRepo.RemoveJobByID(job)
+
+	if errR != nil {
+		return c.Status(http.StatusBadRequest).JSON(errR)
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"Msg":    "Job removed",
+		"Result": resultRemove,
+	})
+}
+
 func NewJobController() JobController {
 	return &jobController{
-		jobRepo: repository.NewJobRepository(),
+		jobRepo:      repository.NewJobRepository(),
+		customerRepo: repository.NewCustomerRepository(),
 	}
 }

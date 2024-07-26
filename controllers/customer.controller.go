@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -120,9 +119,11 @@ func (controller customerController) RemoveCustomer(c *fiber.Ctx) error {
 		})
 	}
 
-	folder := fmt.Sprintf("tmp/uploads/%s", customer.Logo.FileName)
+	resultRemove, errRemove := handlers.RemoveS3(customer.Logo.FileName)
 
-	os.Remove(folder)
+	if errRemove != nil {
+		return c.Status(http.StatusBadRequest).JSON(errRemove)
+	}
 
 	errR := controller.customerRepo.RemoveCustomerByID(customer)
 
@@ -144,7 +145,8 @@ func (controller customerController) RemoveCustomer(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusOK).JSON(fiber.Map{
-		"Msg": "Customer removed",
+		"Msg":    "Customer removed",
+		"Result": resultRemove,
 	})
 }
 

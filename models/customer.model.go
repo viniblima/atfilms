@@ -9,8 +9,8 @@ type Customer struct {
 	gorm.Model
 	ID         string `gorm:"primaryKey"`
 	Name       string `json:"Name" validate:"required,min=3,max=32"`
-	Logo       Photo  `gorm:"foreignKey:ReferenceID"`
-	ShowInHome *bool  `json:"ShowInHome"`
+	Logo       *Photo `json:"Logo" gorm:"foreignKey:LogoID"`
+	ShowInHome *bool  `json:"ShowInHome" validate:"required"`
 	Position   int    `json:"Position" validate:"required"`
 }
 
