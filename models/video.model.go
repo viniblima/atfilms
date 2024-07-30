@@ -11,6 +11,7 @@ type Video struct {
 	MainVideoID          *string
 	JobComponentVideosID *string
 	FileName             string `json:"FileName" validate:"required"`
+	Position             *int
 }
 
 func (m *Video) BeforeCreate(db *gorm.DB) (err error) {

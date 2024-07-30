@@ -17,6 +17,7 @@ type Job struct {
 	Components  *[]JobComponent `gorm:"foreignKey:JobID"`
 	Placeholder Photo           `gorm:"foreignKey:PlaceholderID"`
 	MainVideo   Video           `gorm:"foreignKey:MainVideoID"`
+	Tags        []*Tag          `gorm:"many2many:job_tags;"`
 }
 
 func (m *Job) BeforeCreate(db *gorm.DB) (err error) {

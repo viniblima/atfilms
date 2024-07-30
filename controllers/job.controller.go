@@ -19,8 +19,10 @@ type JobController interface {
 }
 
 type jobController struct {
-	jobRepo      repository.JobRepository
-	customerRepo repository.CustomerRepository
+	jobRepo          repository.JobRepository
+	customerRepo     repository.CustomerRepository
+	jobComponentRepo repository.JobComponentRepository
+	tagRepo          repository.TagRepository
 }
 
 type CreateJobStruct struct {
@@ -29,6 +31,7 @@ type CreateJobStruct struct {
 	CustomerID string                `json:"CustomerID" validate:"required"`
 	ShowInHome bool                  `json:"ShowInHome" `
 	Components []models.JobComponent `json:"Components"`
+	Tags       []string
 }
 
 func (controller jobController) UpdateJob(c *fiber.Ctx) error {
@@ -58,6 +61,26 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 		})
 	}
 
+	var tags []*models.Tag
+	for i := 0; i < len(body.Tags); i++ {
+		tag, errTag := controller.tagRepo.GetByName(body.Tags[i])
+
+		if errTag != nil {
+			objTag := models.Tag{
+				Name: body.Tags[i],
+			}
+
+			newTag, errNewTag := controller.tagRepo.Create(&objTag)
+
+			if errNewTag != nil {
+				tags = append(tags, newTag)
+			}
+		} else {
+			tags = append(tags, tag)
+		}
+	}
+	// jobFound.Tags = tags
+
 	jobFound.Customer = Customer
 	jobFound.Name = body.Name
 	jobFound.Slug = body.Slug
@@ -65,11 +88,38 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 
 	update, errUpdate := controller.jobRepo.UpdateJob(jobFound)
 
+	// errAppend := controller.jobRepo.AppendTag(update, tags)
+
+	append, errClear, errAppend := controller.jobRepo.AppendTag(update, tags)
+
+	if errClear != nil {
+		return c.Status(http.StatusBadRequest).JSON(errClear)
+	}
+
+	if errAppend != nil {
+		return c.Status(http.StatusBadRequest).JSON(errAppend)
+	}
+
+	for i := 0; i < len(body.Components); i++ {
+		found, errFound := controller.jobComponentRepo.GetJobComponentByID(body.Components[i].ID)
+		if errFound != nil {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Job Component not found"})
+		}
+		found.Text = body.Components[i].Text
+		found.Title = body.Components[i].Title
+
+		_, errCpnt := controller.jobComponentRepo.UpdateJobComponent(found)
+
+		if errCpnt != nil {
+			return c.Status(http.StatusBadRequest).JSON(errCpnt)
+		}
+	}
+
 	if errUpdate != nil {
 		return c.Status(http.StatusBadRequest).JSON(errUpdate)
 	}
 
-	return c.Status(http.StatusOK).JSON(update)
+	return c.Status(http.StatusOK).JSON(append)
 }
 
 func (controller jobController) CreateJob(c *fiber.Ctx) error {
@@ -90,22 +140,81 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 		})
 	}
 
+	var tags []*models.Tag
+	for i := 0; i < len(body.Tags); i++ {
+		tag, errTag := controller.tagRepo.GetByName(body.Tags[i])
+
+		if errTag != nil {
+			objTag := models.Tag{
+				Name: body.Tags[i],
+			}
+
+			newTag, errNewTag := controller.tagRepo.Create(&objTag)
+
+			if errNewTag != nil {
+				tags = append(tags, newTag)
+			}
+		} else {
+			tags = append(tags, tag)
+		}
+	}
+
 	newJob := models.Job{
 		Name:       body.Name,
 		Slug:       body.Slug,
 		ShowInHome: body.ShowInHome,
 		// Components: body.Components,
 	}
+	newJob.Tags = tags
 	newJob.Customer = customer
 	newJob.CustomerID = customer.ID
 
 	job, errJob := controller.jobRepo.CreateJob(&newJob)
 
+	_, errClear, errAppend := controller.jobRepo.AppendTag(job, tags)
+
+	if errClear != nil {
+		return c.Status(http.StatusBadRequest).JSON(errClear)
+	}
+
+	if errAppend != nil {
+		return c.Status(http.StatusBadRequest).JSON(errAppend)
+	}
+
 	if errJob != nil {
 		return c.Status(http.StatusBadRequest).JSON(errJob)
 	}
 
-	return c.Status(http.StatusCreated).JSON(job)
+	var components []models.JobComponent
+
+	for i := 0; i < len(body.Components); i++ {
+		l := &body.Components[i]
+
+		newC := models.JobComponent{
+			JobID:    job.ID,
+			Type:     l.Type,
+			Title:    l.Title,
+			Text:     l.Text,
+			Position: l.Position,
+		}
+		newComponent, errNewComponent := controller.jobComponentRepo.CreateJobComponent(&newC)
+
+		if errNewComponent != nil {
+			return c.Status(http.StatusBadRequest).JSON(errNewComponent)
+		}
+
+		components = append(components, *newComponent)
+	}
+
+	job.Components = &components
+
+	update, errUpdate := controller.jobRepo.UpdateJob(job)
+
+	if errUpdate != nil {
+		return c.Status(http.StatusBadRequest).JSON(errUpdate)
+	}
+
+	return c.Status(http.StatusCreated).JSON(update)
 }
 
 func (controller jobController) ListAllJobs(c *fiber.Ctx) error {
@@ -122,16 +231,9 @@ func (controller jobController) GetJobBySlug(c *fiber.Ctx) error {
 	job, err := controller.jobRepo.GetJobByID(slug)
 
 	if err != nil {
-
-		job, err := controller.jobRepo.GetJobByID(slug)
-
-		if err != nil {
-
-			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-				"error": "Job not found",
-			})
-		}
-		return c.Status(http.StatusOK).JSON(job)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Job not found",
+		})
 	}
 	return c.Status(http.StatusOK).JSON(job)
 }
@@ -167,7 +269,9 @@ func (controller jobController) RemoveJob(c *fiber.Ctx) error {
 
 func NewJobController() JobController {
 	return &jobController{
-		jobRepo:      repository.NewJobRepository(),
-		customerRepo: repository.NewCustomerRepository(),
+		jobRepo:          repository.NewJobRepository(),
+		customerRepo:     repository.NewCustomerRepository(),
+		jobComponentRepo: repository.NewJobComponentRepository(),
+		tagRepo:          repository.NewTagRepository(),
 	}
 }

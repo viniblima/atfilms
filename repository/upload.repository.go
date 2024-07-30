@@ -12,9 +12,14 @@ type uploadRepository struct {
 
 type UploadRepository interface {
 	CreatePhoto(c *models.Photo) (*models.Photo, error)
+	UpdatePhoto(c *models.Photo) (*models.Photo, error)
 	CreateVideo(c *models.Video) (*models.Video, error)
+	UpdateVideo(c *models.Video) (*models.Video, error)
 	RemovePhotoByID(id string) error
 	RemoveVideoByID(id string) error
+	GetPhotosBySliderID(id string) (*[]models.Photo, error)
+	GetPhotoByID(id string) (*models.Photo, error)
+	GetVideoByID(id string) (*models.Video, error)
 }
 
 func (r *uploadRepository) CreatePhoto(c *models.Photo) (*models.Photo, error) {
@@ -22,8 +27,18 @@ func (r *uploadRepository) CreatePhoto(c *models.Photo) (*models.Photo, error) {
 	return c, err
 }
 
+func (r *uploadRepository) UpdatePhoto(c *models.Photo) (*models.Photo, error) {
+	err := r.Db.Save(c).Error
+	return c, err
+}
+
 func (r *uploadRepository) CreateVideo(c *models.Video) (*models.Video, error) {
 	err := r.Db.Create(c).Error
+	return c, err
+}
+
+func (r *uploadRepository) UpdateVideo(c *models.Video) (*models.Video, error) {
+	err := r.Db.Save(c).Error
 	return c, err
 }
 
@@ -37,6 +52,24 @@ func (repo *uploadRepository) RemoveVideoByID(id string) error {
 	var video models.Video
 	err := repo.Db.Model(&models.Video{}).Where("ID = ?", id).Delete(video).Error
 	return err
+}
+
+func (repo *uploadRepository) GetPhotosBySliderID(id string) (*[]models.Photo, error) {
+	var ps []models.Photo
+	err := repo.Db.Where("slider_id = ?", id).Find(&ps).Error
+	return &ps, err
+}
+
+func (repo *uploadRepository) GetPhotoByID(id string) (*models.Photo, error) {
+	var p models.Photo
+	err := repo.Db.Where("ID = ?", id).First(&p).Error
+	return &p, err
+}
+
+func (repo *uploadRepository) GetVideoByID(id string) (*models.Video, error) {
+	var p models.Video
+	err := repo.Db.Where("ID = ?", id).First(&p).Error
+	return &p, err
 }
 
 func NewUploadRepository() UploadRepository {

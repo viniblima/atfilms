@@ -41,9 +41,8 @@ func (controller userController) SignIn(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
 	}
-	print(body.Email)
+
 	u, errorU := controller.userRepo.GetUserByEmail(body.Email)
-	print(u)
 
 	checked := handlers.CheckHash(u.Password, body.Password)
 

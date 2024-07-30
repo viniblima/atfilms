@@ -13,7 +13,7 @@ const (
 )
 
 func (ct *jobComponentType) Scan(value interface{}) error {
-	*ct = jobComponentType(value.([]byte))
+	*ct = jobComponentType(value.(string))
 	return nil
 }
 

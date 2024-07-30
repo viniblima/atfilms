@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/viniblima/atfilms/handlers"
 	"github.com/viniblima/atfilms/models"
@@ -15,6 +16,13 @@ type UploadController interface {
 	UploadJobVideo(c *fiber.Ctx) error
 	UploadJobComponentFillPhotoHorizontal(c *fiber.Ctx) error
 	UploadJobComponentPhotoSlider(c *fiber.Ctx) error
+	UploadJobComponentVideo(c *fiber.Ctx) error
+
+	UpdatePhotoPositionInSlider(c *fiber.Ctx) error
+	RemovePhotoFromSlider(c *fiber.Ctx) error
+
+	UpdateVideoPositionInSlider(c *fiber.Ctx) error
+	RemoveVideoFromList(c *fiber.Ctx) error
 }
 
 type uploadController struct {
@@ -173,6 +181,20 @@ func (controller uploadController) UploadJobComponentFillPhotoHorizontal(c *fibe
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errPhoto})
 	}
 
+	if jc.FillPhotoHorizontal != nil {
+		_, errUpload := handlers.RemoveS3(jc.FillPhotoHorizontal.FileName)
+
+		if errUpload != nil {
+			return c.Status(http.StatusBadRequest).JSON(errUpload)
+		}
+
+		errRemove := controller.uploadRepo.RemovePhotoByID(jc.FillPhotoHorizontal.ID)
+
+		if errRemove != nil {
+			return c.Status(http.StatusBadRequest).JSON(errRemove)
+		}
+	}
+
 	jc.FillPhotoHorizontal = photo
 
 	updateJc, errUpdate := controller.jobComponentRepo.UpdateJobComponent(jc)
@@ -203,18 +225,27 @@ func (controller uploadController) UploadJobComponentPhotoSlider(c *fiber.Ctx) e
 		return c.Status(http.StatusBadRequest).JSON(errUpload)
 	}
 
-	newPhoto := models.Photo{
+	newPhoto := &models.Photo{
 		SliderID: &jc.ID,
 		FileName: upload.Location,
 	}
 
-	photo, errPhoto := controller.uploadRepo.CreatePhoto(&newPhoto)
+	_, errPhoto := controller.uploadRepo.CreatePhoto(newPhoto)
 
 	if errPhoto != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errPhoto})
 	}
 
-	append, errAppend := controller.jobComponentRepo.AppendPhotoToSlider(jc, photo)
+	list, errList := controller.uploadRepo.GetPhotosBySliderID(jc.ID)
+
+	if errList != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errList})
+	}
+
+	jc.Slider = list
+
+	append, errAppend := controller.jobComponentRepo.UpdateJobComponent(jc)
+	// append, errAppend := controller.jobComponentRepo.AppendPhotoToSlider(jc, photo)
 
 	if errAppend != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errAppend})
@@ -260,6 +291,118 @@ func (controller uploadController) UploadJobComponentVideo(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusCreated).JSON(append)
+}
+
+func (controller uploadController) UpdatePhotoPositionInSlider(c *fiber.Ctx) error {
+	body := new(models.UpdateFilePositionStruct)
+
+	c.BodyParser(&body)
+
+	err := validator.New().Struct(body)
+	if err != nil {
+		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
+	}
+
+	cID := c.Params("id")
+
+	photo, errPhoto := controller.uploadRepo.GetPhotoByID(cID)
+
+	if errPhoto != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Photo not found"})
+	}
+
+	photo.Position = &body.Position
+
+	update, errUpdate := controller.uploadRepo.UpdatePhoto(photo)
+
+	if errUpdate != nil {
+		return c.Status(http.StatusBadRequest).JSON(errUpdate)
+	}
+
+	return c.Status(http.StatusOK).JSON(update)
+}
+
+func (controller uploadController) RemovePhotoFromSlider(c *fiber.Ctx) error {
+	body := new(models.UpdateFilePositionStruct)
+
+	c.BodyParser(&body)
+
+	err := validator.New().Struct(body)
+	if err != nil {
+		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
+	}
+
+	cID := c.Params("id")
+
+	photo, errPhoto := controller.uploadRepo.GetPhotoByID(cID)
+
+	if errPhoto != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Photo not found"})
+	}
+
+	errRemove := controller.uploadRepo.RemovePhotoByID(photo.ID)
+
+	if errRemove != nil {
+		return c.Status(http.StatusBadRequest).JSON(errRemove)
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{"Msg": "Photo removed"})
+}
+
+func (controller uploadController) UpdateVideoPositionInSlider(c *fiber.Ctx) error {
+	body := new(models.UpdateFilePositionStruct)
+
+	c.BodyParser(&body)
+
+	err := validator.New().Struct(body)
+	if err != nil {
+		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
+	}
+
+	cID := c.Params("id")
+
+	video, errVideo := controller.uploadRepo.GetVideoByID(cID)
+
+	if errVideo != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Video not found"})
+	}
+
+	video.Position = &body.Position
+
+	update, errUpdate := controller.uploadRepo.UpdateVideo(video)
+
+	if errUpdate != nil {
+		return c.Status(http.StatusBadRequest).JSON(errUpdate)
+	}
+
+	return c.Status(http.StatusOK).JSON(update)
+}
+
+func (controller uploadController) RemoveVideoFromList(c *fiber.Ctx) error {
+	body := new(models.UpdateFilePositionStruct)
+
+	c.BodyParser(&body)
+
+	err := validator.New().Struct(body)
+	if err != nil {
+		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
+	}
+
+	cID := c.Params("id")
+
+	video, errVideo := controller.uploadRepo.GetVideoByID(cID)
+
+	if errVideo != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Video not found"})
+	}
+
+	errRemove := controller.uploadRepo.RemoveVideoByID(video.ID)
+
+	if errRemove != nil {
+		return c.Status(http.StatusBadRequest).JSON(errRemove)
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{"Msg": "Video removed"})
 }
 
 func NewUploadController() UploadController {

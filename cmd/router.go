@@ -26,4 +26,5 @@ func setupV1Routes(api fiber.Router) {
 	routes.SetupJobRoutes(v1)
 	routes.SetupUploadRoutes(v1)
 	routes.SetupHomeRoutes(v1)
+	routes.SetupTagRoutes(v1)
 }

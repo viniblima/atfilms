@@ -4,6 +4,7 @@ import (
 	"github.com/viniblima/atfilms/database"
 	"github.com/viniblima/atfilms/models"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type jobRepository struct {
@@ -17,10 +18,11 @@ type JobRepository interface {
 	GetJobByID(id string) (*models.Job, error)
 	GetJobsHome() (*[]models.Job, error)
 	RemoveJobByID(customer *models.Job) error
+	AppendTag(job *models.Job, tag []*models.Tag) (*models.Job, error, error)
 }
 
 func (r *jobRepository) CreateJob(m *models.Job) (*models.Job, error) {
-	err := r.Db.Omit("Placeholder", "Video", "Customer", "Components").Create(&m).Error
+	err := r.Db.Omit("Placeholder", "Video", "Customer", "Components", "Tags").Create(&m).Error
 	return m, err
 }
 
@@ -31,13 +33,13 @@ func (r *jobRepository) ListAllJobs() (*[]models.Job, error) {
 }
 
 func (r *jobRepository) UpdateJob(job *models.Job) (*models.Job, error) {
-	err := r.Db.Omit("Placeholder", "Video", "Customer", "Components").Save(&job).Error
+	err := r.Db.Omit("Placeholder", "Video", "Customer", "Components", "Tags").Save(&job).Error
 	return job, err
 }
 
 func (repo *jobRepository) GetJobByID(id string) (*models.Job, error) {
 	var job models.Job
-	err := repo.Db.Preload("Customer").Preload("Components").Preload("Placeholder").Preload("MainVideo").Where("ID = ?", id).Or("Slug = ?", id).First(&job).Error
+	err := repo.Db.Preload("Customer").Preload("Components."+clause.Associations).Preload("Placeholder").Preload("MainVideo").Preload("Tags").Where("ID = ?", id).Or("Slug = ?", id).First(&job).Error
 
 	return &job, err
 }
@@ -48,9 +50,15 @@ func (repo *jobRepository) GetJobsHome() (*[]models.Job, error) {
 	return &ls, err
 }
 
-func (repo *jobRepository) RemoveJobByID(customer *models.Job) error {
-	err := repo.Db.Delete(&customer).Error
+func (repo *jobRepository) RemoveJobByID(job *models.Job) error {
+	err := repo.Db.Delete(&job).Error
 	return err
+}
+
+func (repo *jobRepository) AppendTag(job *models.Job, tag []*models.Tag) (*models.Job, error, error) {
+	errClear := repo.Db.Model(&job).Association("Tags").Clear()
+	err := repo.Db.Model(&job).Omit("Tags.*").Association("Tags").Append(&tag)
+	return job, err, errClear
 }
 
 func NewJobRepository() JobRepository {

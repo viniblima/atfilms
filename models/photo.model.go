@@ -13,9 +13,14 @@ type Photo struct {
 	SliderID              *string
 	FillPhotoHorizontalID *string
 	FileName              string `json:"FileName" validate:"required"`
+	Position              *int
 }
 
 func (m *Photo) BeforeCreate(db *gorm.DB) (err error) {
 	m.ID = uuid.NewV4().String()
 	return
+}
+
+type UpdateFilePositionStruct struct {
+	Position int
 }

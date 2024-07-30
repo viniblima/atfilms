@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -139,7 +138,6 @@ func (controller customerController) RemoveCustomer(c *fiber.Ctx) error {
 
 	for i := 0; i < len(*ls); i++ {
 		newCs := (*ls)[i]
-		fmt.Println(newCs)
 		newCs.Position = i
 		controller.customerRepo.UpdateCustomer(&newCs)
 	}

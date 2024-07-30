@@ -8,7 +8,8 @@ import (
 type Tag struct {
 	gorm.Model
 	ID   string `gorm:"primaryKey"`
-	Name string `json:"Name" validate:"required,min=3,max=32"`
+	Name string `gorm:"unique" json:"Name" validate:"required,min=3,max=32"`
+	Jobs []*Job `gorm:"many2many:job_tags;"`
 }
 
 func (m *Tag) BeforeCreate(db *gorm.DB) (err error) {
