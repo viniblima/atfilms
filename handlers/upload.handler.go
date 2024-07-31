@@ -38,10 +38,13 @@ func UploadS3(c *fiber.Ctx, file *multipart.FileHeader, fileType string) (*s3man
 		return nil, errOpen
 	}
 	fmt.Println(f)
-	sess := session.Must(session.NewSession())
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String(os.Getenv("AWS_REGION")),
+	}))
 	fmt.Println(sess)
 	uploader := s3manager.NewUploader(sess)
 	fmt.Println(os.Getenv("AWS_BUCKET"))
+	fmt.Println(os.Getenv("AWS_REGION"))
 	result, errUploader := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(os.Getenv("AWS_BUCKET")),
 		Key:    aws.String(fileName),
@@ -54,16 +57,20 @@ func UploadS3(c *fiber.Ctx, file *multipart.FileHeader, fileType string) (*s3man
 	}
 	r := os.Remove(folder)
 
+	fmt.Println(r)
 	if r != nil {
 		return nil, r
 	}
 
+	fmt.Println(result)
 	return result, nil
 }
 
 func RemoveS3(key string) (*s3.DeleteObjectOutput, error) {
 
-	sess := session.Must(session.NewSession())
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String(os.Getenv("AWS_REGION")),
+	}))
 	svc := s3.New(sess)
 
 	input := &s3.DeleteObjectInput{
