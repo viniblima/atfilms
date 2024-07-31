@@ -48,6 +48,7 @@ func UploadS3(c *fiber.Ctx, file *multipart.FileHeader, fileType string) (*s3man
 		Body:   f,
 	})
 
+	fmt.Println(errUploader)
 	if errUploader != nil {
 		return nil, errUploader
 	}
