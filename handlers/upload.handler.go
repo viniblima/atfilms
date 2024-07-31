@@ -33,15 +33,15 @@ func UploadS3(c *fiber.Ctx, file *multipart.FileHeader, fileType string) (*s3man
 	}
 
 	f, errOpen := os.Open(folder)
-
+	fmt.Println(folder)
 	if errOpen != nil {
 		return nil, errOpen
 	}
-
+	fmt.Println(f)
 	sess := session.Must(session.NewSession())
-
+	fmt.Println(sess)
 	uploader := s3manager.NewUploader(sess)
-
+	fmt.Println(os.Getenv("AWS_BUCKET"))
 	result, errUploader := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(os.Getenv("AWS_BUCKET")),
 		Key:    aws.String(fileName),
