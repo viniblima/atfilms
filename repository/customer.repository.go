@@ -42,7 +42,7 @@ func (repo *customerRepository) RemoveCustomerByID(customer *models.Customer) er
 
 func (repo *customerRepository) GetCustomerByID(id string) (*models.Customer, error) {
 	var Customer models.Customer
-	err := repo.Db.Where("ID = ?", id).First(&Customer).Error
+	err := repo.Db.Where("ID = ?", id).Preload("Logo").First(&Customer).Error
 
 	return &Customer, err
 }
