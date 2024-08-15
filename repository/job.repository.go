@@ -19,10 +19,11 @@ type JobRepository interface {
 	GetJobsHome() (*[]models.Job, error)
 	RemoveJobByID(customer *models.Job) error
 	AppendTag(job *models.Job, tag []*models.Tag) (*models.Job, error, error)
+	AppendAward(job *models.Job, awards []*models.Award) (*models.Job, error, error)
 }
 
 func (r *jobRepository) CreateJob(m *models.Job) (*models.Job, error) {
-	err := r.Db.Omit("Placeholder", "Video", "Customer", "Components", "Tags").Create(&m).Error
+	err := r.Db.Omit("Placeholder", "Video", "Customer", "Components", "Tags", "Awards").Create(&m).Error
 	return m, err
 }
 
@@ -33,13 +34,13 @@ func (r *jobRepository) ListAllJobs() (*[]models.Job, error) {
 }
 
 func (r *jobRepository) UpdateJob(job *models.Job) (*models.Job, error) {
-	err := r.Db.Omit("Placeholder", "Video", "Customer", "Components", "Tags").Save(&job).Error
+	err := r.Db.Omit("Placeholder", "Video", "Customer", "Components", "Tags", "Awards").Save(&job).Error
 	return job, err
 }
 
 func (repo *jobRepository) GetJobByID(id string) (*models.Job, error) {
 	var job models.Job
-	err := repo.Db.Preload("Customer").Preload("Components."+clause.Associations).Preload("Placeholder").Preload("MainVideo").Preload("Tags").Where("ID = ?", id).Or("Slug = ?", id).First(&job).Error
+	err := repo.Db.Preload("Awards."+clause.Associations).Preload("Customer").Preload("Components."+clause.Associations).Preload("Placeholder").Preload("MainVideo").Preload("Tags").Where("ID = ?", id).Or("Slug = ?", id).First(&job).Error
 
 	return &job, err
 }
@@ -58,6 +59,13 @@ func (repo *jobRepository) RemoveJobByID(job *models.Job) error {
 func (repo *jobRepository) AppendTag(job *models.Job, tag []*models.Tag) (*models.Job, error, error) {
 	errClear := repo.Db.Model(&job).Association("Tags").Clear()
 	err := repo.Db.Model(&job).Omit("Tags.*").Association("Tags").Append(&tag)
+	return job, err, errClear
+}
+
+func (repo *jobRepository) AppendAward(job *models.Job, awards []*models.Award) (*models.Job, error, error) {
+	errClear := repo.Db.Model(&job).Association("Awards").Clear()
+	err := repo.Db.Model(&job).Omit("Awards.*").Association("Awards").Append(&awards)
+
 	return job, err, errClear
 }
 

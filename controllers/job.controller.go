@@ -23,6 +23,7 @@ type jobController struct {
 	customerRepo     repository.CustomerRepository
 	jobComponentRepo repository.JobComponentRepository
 	tagRepo          repository.TagRepository
+	awardRepo        repository.AwardRepository
 }
 
 type CreateJobStruct struct {
@@ -32,6 +33,7 @@ type CreateJobStruct struct {
 	ShowInHome bool                  `json:"ShowInHome" `
 	Components []models.JobComponent `json:"Components"`
 	Tags       []string
+	Awards     []string
 }
 
 func (controller jobController) UpdateJob(c *fiber.Ctx) error {
@@ -79,7 +81,15 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 			tags = append(tags, tag)
 		}
 	}
-	// jobFound.Tags = tags
+
+	var awards []*models.Award
+	for i := 0; i < len(body.Awards); i++ {
+		a, errA := controller.awardRepo.GetByID(body.Awards[i])
+
+		if errA == nil {
+			awards = append(awards, a)
+		}
+	}
 
 	jobFound.Customer = Customer
 	jobFound.Name = body.Name
@@ -88,9 +98,7 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 
 	update, errUpdate := controller.jobRepo.UpdateJob(jobFound)
 
-	// errAppend := controller.jobRepo.AppendTag(update, tags)
-
-	append, errClear, errAppend := controller.jobRepo.AppendTag(update, tags)
+	_, errClear, errAppend := controller.jobRepo.AppendTag(update, tags)
 
 	if errClear != nil {
 		return c.Status(http.StatusBadRequest).JSON(errClear)
@@ -98,6 +106,16 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 
 	if errAppend != nil {
 		return c.Status(http.StatusBadRequest).JSON(errAppend)
+	}
+
+	appendAward, errClearAward, errAppendAward := controller.jobRepo.AppendAward(update, awards)
+
+	if errClearAward != nil {
+		return c.Status(http.StatusBadRequest).JSON(errClearAward)
+	}
+
+	if errAppendAward != nil {
+		return c.Status(http.StatusBadRequest).JSON(errAppendAward)
 	}
 
 	for i := 0; i < len(body.Components); i++ {
@@ -119,7 +137,7 @@ func (controller jobController) UpdateJob(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(errUpdate)
 	}
 
-	return c.Status(http.StatusOK).JSON(append)
+	return c.Status(http.StatusOK).JSON(appendAward)
 }
 
 func (controller jobController) CreateJob(c *fiber.Ctx) error {
@@ -159,11 +177,20 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 		}
 	}
 
+	var awards []*models.Award
+
+	for i := 0; i < len(body.Awards); i++ {
+		a, errA := controller.awardRepo.GetByID(body.Awards[i])
+
+		if errA == nil {
+			awards = append(awards, a)
+		}
+	}
+
 	newJob := models.Job{
 		Name:       body.Name,
 		Slug:       body.Slug,
 		ShowInHome: body.ShowInHome,
-		// Components: body.Components,
 	}
 	newJob.Tags = tags
 	newJob.Customer = customer
@@ -179,6 +206,16 @@ func (controller jobController) CreateJob(c *fiber.Ctx) error {
 
 	if errAppend != nil {
 		return c.Status(http.StatusBadRequest).JSON(errAppend)
+	}
+
+	_, errClearAward, errAppendAward := controller.jobRepo.AppendAward(job, awards)
+
+	if errClearAward != nil {
+		return c.Status(http.StatusBadRequest).JSON(errClearAward)
+	}
+
+	if errAppendAward != nil {
+		return c.Status(http.StatusBadRequest).JSON(errAppendAward)
 	}
 
 	if errJob != nil {
@@ -273,5 +310,6 @@ func NewJobController() JobController {
 		customerRepo:     repository.NewCustomerRepository(),
 		jobComponentRepo: repository.NewJobComponentRepository(),
 		tagRepo:          repository.NewTagRepository(),
+		awardRepo:        repository.NewAwardRepository(),
 	}
 }

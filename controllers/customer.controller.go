@@ -92,7 +92,6 @@ func (controller customerController) UpdateCustomer(c *fiber.Ctx) error {
 	controller.customerRepo.UpdateCustomer(customer)
 
 	return c.Status(http.StatusOK).JSON(fiber.Map{
-
 		"Customer": *customer,
 	})
 }

@@ -20,6 +20,7 @@ type UploadRepository interface {
 	GetPhotosBySliderID(id string) (*[]models.Photo, error)
 	GetPhotoByID(id string) (*models.Photo, error)
 	GetVideoByID(id string) (*models.Video, error)
+	GetVideosByComponentID(id string) (*[]models.Video, error)
 }
 
 func (r *uploadRepository) CreatePhoto(c *models.Photo) (*models.Photo, error) {
@@ -58,6 +59,12 @@ func (repo *uploadRepository) GetPhotosBySliderID(id string) (*[]models.Photo, e
 	var ps []models.Photo
 	err := repo.Db.Where("slider_id = ?", id).Find(&ps).Error
 	return &ps, err
+}
+
+func (repo *uploadRepository) GetVideosByComponentID(id string) (*[]models.Video, error) {
+	var ls []models.Video
+	err := repo.Db.Where("job_component_videos_id = ?", id).Find(&ls).Error
+	return &ls, err
 }
 
 func (repo *uploadRepository) GetPhotoByID(id string) (*models.Photo, error) {

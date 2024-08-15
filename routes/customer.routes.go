@@ -23,11 +23,9 @@ func SetupCustomerRoutes(api fiber.Router) {
 
 	customer_routes := api.Group("/customers") // Configuracao da rota pai
 
-	customer_routes.Post("/", router.middleware.VerifyJWT, router.customerController.CreateCustomer) // Criacao de Customer
-	customer_routes.Get("/", router.middleware.VerifyJWT, router.customerController.ListCustomers)   // Lista de Customers
-
-	customer_routes.Get("/:id", router.middleware.VerifyJWT, router.customerController.GetCustomerByID) // Detalhes de Customer
-	customer_routes.Put("/:id", router.middleware.VerifyJWT, router.customerController.UpdateCustomer)  // Atualiza Customer
-
+	customer_routes.Post("/", router.middleware.VerifyJWT, router.customerController.CreateCustomer)      // Criacao de Customer
+	customer_routes.Get("/", router.customerController.ListCustomers)                                     // Lista de Customers
+	customer_routes.Get("/:id", router.middleware.VerifyJWT, router.customerController.GetCustomerByID)   // Detalhes de Customer
+	customer_routes.Put("/:id", router.middleware.VerifyJWT, router.customerController.UpdateCustomer)    // Atualiza Customer
 	customer_routes.Delete("/:id", router.middleware.VerifyJWT, router.customerController.RemoveCustomer) // Remove Customer
 }

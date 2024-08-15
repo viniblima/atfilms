@@ -10,6 +10,7 @@ type Photo struct {
 	ID                    string  `gorm:"primaryKey"`
 	LogoID                *string `json:"LogoID" `
 	PlaceholderID         *string
+	AwardImageID          *string
 	SliderID              *string
 	FillPhotoHorizontalID *string
 	FileName              string `json:"FileName" validate:"required"`

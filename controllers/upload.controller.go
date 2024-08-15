@@ -23,6 +23,8 @@ type UploadController interface {
 
 	UpdateVideoPositionInSlider(c *fiber.Ctx) error
 	RemoveVideoFromList(c *fiber.Ctx) error
+
+	UploadAwardImage(c *fiber.Ctx) error
 }
 
 type uploadController struct {
@@ -30,6 +32,7 @@ type uploadController struct {
 	customerRepo     repository.CustomerRepository
 	jobRepo          repository.JobRepository
 	jobComponentRepo repository.JobComponentRepository
+	awardRepo        repository.AwardRepository
 }
 
 func (controller uploadController) UploadCustomerLogo(c *fiber.Ctx) error {
@@ -69,6 +72,54 @@ func (controller uploadController) UploadCustomerLogo(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errUpdate})
 	}
 	return c.Status(http.StatusCreated).JSON(updateCustomer)
+}
+
+func (controller uploadController) UploadAwardImage(c *fiber.Ctx) error {
+	file, err := c.FormFile("image")
+	if err != nil {
+		return c.Status(http.StatusUnprocessableEntity).JSON(handlers.NewJError(err))
+	}
+	cID := c.Params("id")
+
+	award, errAward := controller.awardRepo.GetByID(cID)
+
+	if errAward != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Customer not found"})
+	}
+	if award.AwardImage != nil {
+		_, errRemove := handlers.RemoveS3(award.AwardImage.FileName)
+
+		if errRemove != nil {
+			return c.Status(http.StatusBadRequest).JSON(errRemove)
+		}
+	}
+
+	upload, errUpload := handlers.UploadS3(c, file, "image")
+
+	if errUpload != nil {
+		return c.Status(http.StatusBadRequest).JSON(errUpload)
+	}
+
+	newPhoto := models.Photo{
+		AwardImageID: &award.ID,
+		FileName:     upload.Location,
+	}
+
+	photo, errPhoto := controller.uploadRepo.CreatePhoto(&newPhoto)
+
+	if errPhoto != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errPhoto})
+	}
+
+	award.AwardImage = photo
+
+	updateAward, errUpdate := controller.awardRepo.Update(award)
+
+	if errUpdate != nil {
+		return c.Status(http.StatusBadRequest).JSON(errUpdate)
+	}
+
+	return c.Status(http.StatusCreated).JSON(updateAward)
 }
 
 func (controller uploadController) UploadJobPhoto(c *fiber.Ctx) error {
@@ -245,7 +296,6 @@ func (controller uploadController) UploadJobComponentPhotoSlider(c *fiber.Ctx) e
 	jc.Slider = list
 
 	append, errAppend := controller.jobComponentRepo.UpdateJobComponent(jc)
-	// append, errAppend := controller.jobComponentRepo.AppendPhotoToSlider(jc, photo)
 
 	if errAppend != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errAppend})
@@ -267,24 +317,34 @@ func (controller uploadController) UploadJobComponentVideo(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Job Component not found"})
 	}
 
-	upload, errUpload := handlers.UploadS3(c, file, "image")
+	upload, errUpload := handlers.UploadS3(c, file, "video")
 
 	if errUpload != nil {
 		return c.Status(http.StatusBadRequest).JSON(errUpload)
 	}
 
-	newVideo := models.Video{
+	newVideo := &models.Video{
 		JobComponentVideosID: &jc.ID,
 		FileName:             upload.Location,
 	}
 
-	video, errVideo := controller.uploadRepo.CreateVideo(&newVideo)
+	_, errVideo := controller.uploadRepo.CreateVideo(newVideo)
 
 	if errVideo != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errVideo})
 	}
 
-	append, errAppend := controller.jobComponentRepo.AppendVideo(jc, video)
+	// append, errAppend := controller.jobComponentRepo.AppendVideo(jc, video)
+
+	list, errList := controller.uploadRepo.GetVideosByComponentID(jc.ID)
+
+	if errList != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errList})
+	}
+
+	jc.Videos = list
+
+	append, errAppend := controller.jobComponentRepo.UpdateJobComponent(jc)
 
 	if errAppend != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errAppend})
@@ -411,5 +471,6 @@ func NewUploadController() UploadController {
 		customerRepo:     repository.NewCustomerRepository(),
 		jobRepo:          repository.NewJobRepository(),
 		jobComponentRepo: repository.NewJobComponentRepository(),
+		awardRepo:        repository.NewAwardRepository(),
 	}
 }

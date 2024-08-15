@@ -43,6 +43,7 @@ func ConnectDb() {
 		&models.User{},
 		&models.Job{},
 		&models.Customer{},
+		&models.Award{},
 		&models.Photo{},
 		&models.Video{},
 		&models.JobComponent{},

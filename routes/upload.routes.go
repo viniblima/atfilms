@@ -24,6 +24,8 @@ func SetupUploadRoutes(api fiber.Router) {
 	upload_routes := api.Group("/upload")                                                                        // Configuracao da rota pai
 	upload_routes.Post("/customer/:id", router.middleware.VerifyJWT, router.uploadController.UploadCustomerLogo) // Upload de foto
 
+	upload_routes.Post("/award/:id", router.middleware.VerifyJWT, router.uploadController.UploadAwardImage)
+
 	upload_routes.Post("/job/placeholder/:id", router.middleware.VerifyJWT, router.uploadController.UploadJobPhoto) // Upload de placeholder
 	upload_routes.Post("/job/video/:id", router.middleware.VerifyJWT, router.uploadController.UploadJobVideo)       // Upload de video
 
@@ -36,4 +38,5 @@ func SetupUploadRoutes(api fiber.Router) {
 	upload_routes.Post("job-component/videos/:id", router.middleware.VerifyJWT, router.uploadController.UploadJobComponentVideo)    // Upload de vídeo à ser adicionado ao slider de vídeos
 	upload_routes.Put("job-component/videos/:id", router.middleware.VerifyJWT, router.uploadController.UpdateVideoPositionInSlider) // Upload de video à ser adicionado à lista de videos
 	upload_routes.Delete("job-component/videos/:id", router.middleware.VerifyJWT, router.uploadController.RemoveVideoFromList)      // Exclui vídeo da lista do componente
+
 }
