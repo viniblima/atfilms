@@ -41,5 +41,5 @@ require (
 	golang.org/x/crypto v0.24.0
 	golang.org/x/sys v0.21.0 // indirect
 	gorm.io/driver/postgres v1.5.9
-	gorm.io/gorm v1.25.10
+	gorm.io/gorm v1.25.12
 )
